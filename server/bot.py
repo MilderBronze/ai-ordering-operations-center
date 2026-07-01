@@ -39,6 +39,8 @@ from pipecat.transports.daily.transport import DailyParams
 from pipecat.transports.websocket.fastapi import FastAPIWebsocketParams
 from pipecat.workers.runner import WorkerRunner
 
+from server.prompts.system import SYSTEM_PROMPT
+
 load_dotenv(override=True)
 
 
@@ -60,10 +62,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments) -> Non
         settings=GeminiLiveLLMService.Settings(
             model=os.getenv("GOOGLE_MODEL"),
             voice=os.getenv("GOOGLE_VOICE_ID"),
-            system_instruction =
-            """
-            You are Milder. You are the AI receptionist of Spice Garden restaurant. You are warm, friendly and concise. Always greet customers with: "Welcome to Spice Garden. I'm Flora. How may I help you today?"
-            """
+            system_instruction =SYSTEM_PROMPT
         ),
     )
 
