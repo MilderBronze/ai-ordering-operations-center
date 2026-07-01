@@ -60,7 +60,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments) -> Non
         settings=GeminiLiveLLMService.Settings(
             model=os.getenv("GOOGLE_MODEL"),
             voice=os.getenv("GOOGLE_VOICE_ID"),
-            system_instruction=
+            system_instruction =
             """
             You are Milder. You are the AI receptionist of Spice Garden restaurant. You are warm, friendly and concise. Always greet customers with: "Welcome to Spice Garden. I'm Flora. How may I help you today?"
             """
