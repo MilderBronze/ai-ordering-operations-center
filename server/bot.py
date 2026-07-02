@@ -40,6 +40,8 @@ from pipecat.transports.websocket.fastapi import FastAPIWebsocketParams
 from pipecat.workers.runner import WorkerRunner
 
 from prompts.system import SYSTEM_PROMPT
+from state.order import OrderState
+from tools.order import add_to_order, change_quantity, remove_from_order
 from tools.menu import get_menu
 from tools.restaurant import is_restaurant_open
 from tools.time import get_current_time
@@ -59,10 +61,19 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments) -> Non
     """
     logger.info("Starting bot")
 
+    orderState=OrderState()
+
     # Realtime LLM service (handles STT, LLM, and TTS internally)
     llm = GeminiLiveLLMService(
         api_key=os.getenv("GOOGLE_API_KEY"),
-        tools=[get_current_time, is_restaurant_open, get_menu],
+        tools=[
+            get_current_time,
+            is_restaurant_open,
+            get_menu,
+            add_to_order,
+            remove_from_order,
+            change_quantity
+        ],
         settings=GeminiLiveLLMService.Settings(
             model=os.getenv("GOOGLE_MODEL"),
             voice=os.getenv("GOOGLE_VOICE_ID"),
