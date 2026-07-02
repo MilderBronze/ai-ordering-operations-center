@@ -15,6 +15,12 @@ def create_order_tools(order_state: OrderState):
             item_name: Name of the menu item.
             quantity: Number of items to add.
         """
+        for item in order_state.items:
+            if item.item_name == item_name:
+                item.quantity += quantity
+                await params.result_callback("Added.")
+                return
+
         order_state.items.append(
             OrderItem(
                 item_name=item_name,
