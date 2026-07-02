@@ -4,17 +4,17 @@ MENU = [
     {
         "name": "Margherita Pizza",
         "price": 299,
-        "stock": 5,
+        "is_available": True,
     },
     {
         "name": "Veg Burger",
         "price": 199,
-        "stock": 10,
+        "is_available": True,
     },
     {
         "name": "Coke",
         "price": 60,
-        "stock": 0,
+        "is_available": False,
     },
 ]
 
