@@ -1,9 +1,21 @@
 from pipecat.services.llm_service import FunctionCallParams
 
 MENU = [
-    {"name": "Margherita Pizza", "price": 299},
-    {"name": "Veg Burger", "price": 199},
-    {"name": "Coke", "price": 60},
+    {
+        "name": "Margherita Pizza",
+        "price": 299,
+        "stock": 5,
+    },
+    {
+        "name": "Veg Burger",
+        "price": 199,
+        "stock": 10,
+    },
+    {
+        "name": "Coke",
+        "price": 60,
+        "stock": 0,
+    },
 ]
 
 

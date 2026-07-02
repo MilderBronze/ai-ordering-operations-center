@@ -42,7 +42,7 @@ from pipecat.workers.runner import WorkerRunner
 from prompts.system import SYSTEM_PROMPT
 from state.order import OrderState
 from tools.order import add_to_order, change_quantity, create_order_tools, remove_from_order
-from tools.menu import get_menu
+from tools.menu import get_menu, MENU
 from tools.restaurant import is_restaurant_open
 from tools.time import get_current_time
 

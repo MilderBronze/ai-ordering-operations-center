@@ -1,6 +1,7 @@
 from pipecat.services.llm_service import FunctionCallParams
 
 from state.order import OrderItem, OrderState
+from server.tools.menu import MENU
 
 def create_order_tools(order_state: OrderState):
 
@@ -15,11 +16,16 @@ def create_order_tools(order_state: OrderState):
             item_name: Name of the menu item.
             quantity: Number of items to add.
         """
-        for item in order_state.items:
-            if item.item_name == item_name:
-                item.quantity += quantity
-                await params.result_callback("Added.")
-                return
+        menu_item = next(
+            (item for item in MENU if item["name"] == item_name),
+            None,
+        )
+
+        if menu_item is None:
+            await params.result_callback(
+                f"{item_name} is not available on our menu."
+            )
+            return
 
         order_state.items.append(
             OrderItem(
