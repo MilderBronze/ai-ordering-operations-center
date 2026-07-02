@@ -39,7 +39,10 @@ from pipecat.transports.daily.transport import DailyParams
 from pipecat.transports.websocket.fastapi import FastAPIWebsocketParams
 from pipecat.workers.runner import WorkerRunner
 
-from server.prompts.system import SYSTEM_PROMPT
+from prompts.system import SYSTEM_PROMPT
+from tools.menu import get_menu
+from tools.restaurant import is_restaurant_open
+from tools.time import get_current_time
 
 load_dotenv(override=True)
 
@@ -59,6 +62,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments) -> Non
     # Realtime LLM service (handles STT, LLM, and TTS internally)
     llm = GeminiLiveLLMService(
         api_key=os.getenv("GOOGLE_API_KEY"),
+        tools=[get_current_time, is_restaurant_open, get_menu],
         settings=GeminiLiveLLMService.Settings(
             model=os.getenv("GOOGLE_MODEL"),
             voice=os.getenv("GOOGLE_VOICE_ID"),
