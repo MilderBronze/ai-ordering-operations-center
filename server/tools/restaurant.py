@@ -1,7 +1,9 @@
 from datetime import datetime
+
 from pipecat.services.llm_service import FunctionCallParams
 
 from config import CLOSING_HOUR, OPENING_HOUR
+
 
 async def is_restaurant_open(params: FunctionCallParams):
     """Return whether Spice Garden is currently open."""
