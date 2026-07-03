@@ -16,6 +16,7 @@ dependencies = [
     { name = "alembic" },
     { name = "pipecat-ai", extra = ["daily", "google", "runner", "websocket"] },
     { name = "psycopg", extra = ["binary"] },
+    { name = "python-dotenv" },
     { name = "sqlalchemy" },
 ]
 
@@ -30,6 +31,7 @@ requires-dist = [
     { name = "alembic", specifier = ">=1.18.5" },
     { name = "pipecat-ai", extras = ["daily", "google", "runner", "silero", "websocket"], specifier = ">=1.4.0" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3.4" },
+    { name = "python-dotenv", specifier = ">=1.2.2" },
     { name = "sqlalchemy", extras = ["asyncpg"], specifier = ">=2.0.51" },
 ]
 

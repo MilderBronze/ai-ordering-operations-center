@@ -1,7 +1,7 @@
 from pipecat.services.llm_service import FunctionCallParams
-from server.tools.menu import MENU
 
 from state.order import OrderItem, OrderState
+from tools.menu import MENU
 
 
 def find_menu_item(item_name: str):
