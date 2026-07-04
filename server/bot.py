@@ -39,9 +39,12 @@ from pipecat.transports.daily.transport import DailyParams
 from pipecat.transports.websocket.fastapi import FastAPIWebsocketParams
 from pipecat.workers.runner import WorkerRunner
 
+from database import SessionLocal
 from prompts.system import SYSTEM_PROMPT
+from repositories.interfaces.menu_repository import MenuRepository
+from repositories.sqlalchemy.menu_repository import SqlAlchemyMenuRepository
 from state.order import OrderState
-from tools.menu import MENU, get_menu
+from tools.menu import create_menu_tools
 from tools.order import create_order_tools
 from tools.restaurant import is_restaurant_open
 from tools.time import get_current_time
@@ -63,11 +66,14 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments) -> Non
 
     order_state=OrderState()
 
+    session = SessionLocal()
+    menu_repository=SqlAlchemyMenuRepository(session)
+
     tools= [
             get_current_time,
             is_restaurant_open,
-            get_menu,
-            *create_order_tools(order_state)
+            *create_menu_tools(menu_repository),
+            *create_order_tools(order_state, menu_repository)
     ]
 
     # Realtime LLM service (handles STT, LLM, and TTS internally)

@@ -1,25 +1,24 @@
 from pipecat.services.llm_service import FunctionCallParams
 
-MENU = [
-    {
-        "name": "Margherita Pizza",
-        "price": 299,
-        "is_available": True,
-    },
-    {
-        "name": "Veg Burger",
-        "price": 199,
-        "is_available": True,
-    },
-    {
-        "name": "Coke",
-        "price": 60,
-        "is_available": False,
-    },
-]
+from repositories.interfaces.menu_repository import MenuRepository
+from schemas.menu import MenuItemResponse
 
 
-async def get_menu(params: FunctionCallParams):
-    """Return the restaurant menu."""
+def create_menu_tools(menu_repository: MenuRepository):
 
-    await params.result_callback(MENU)
+    async def get_menu(params: FunctionCallParams):
+        """Return the restaurant menu."""
+
+        menu = menu_repository.get_all()
+        await params.result_callback(
+            [
+                MenuItemResponse(
+                    name=item.name,
+                    price=item.price,
+                    is_available=item.is_available
+                ) # can use model dump method as a one liner shortcut. but this is more intuitive
+                for item in menu
+            ]
+        )
+
+    return [get_menu]

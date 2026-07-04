@@ -1,17 +1,10 @@
 from pipecat.services.llm_service import FunctionCallParams
 
+from repositories.interfaces.menu_repository import MenuRepository
 from state.order import OrderItem, OrderState
-from tools.menu import MENU
 
 
-def find_menu_item(item_name: str):
-    return next(
-        (item for item in MENU if item["name"] == item_name),
-        None,
-    )
-
-
-def create_order_tools(order_state: OrderState):
+def create_order_tools(order_state: OrderState, menu_repository: MenuRepository):
 
     async def add_to_order(
         params: FunctionCallParams,
@@ -25,31 +18,31 @@ def create_order_tools(order_state: OrderState):
             quantity: Number of items to add.
         """
 
-        menu_item = find_menu_item(item_name)
-
+        menu_item = menu_repository.get_item_by_name(item_name)
         if menu_item is None:
             await params.result_callback(f"{item_name} is not available on our menu.")
             return
 
-        if not menu_item["is_available"]:
+        if not menu_item.is_available:
             await params.result_callback(f"Sorry, {item_name} is currently unavailable.")
             return
 
-        for item in order_state.items:
-            if item.item_name == item_name:
-                item.quantity += quantity
+        # for item in order_state.items:
+        #     if item.item_name == item_name:
+        #         item.quantity += quantity
 
-                print(f"Order status: {order_state.items}")
+        #         print(f"Order status: {order_state.items}")
 
-                await params.result_callback("Added.")
-                return
+        #         await params.result_callback("Added.")
+        #         return
 
-        order_state.items.append(
-            OrderItem(
-                item_name=item_name,
-                quantity=quantity,
-            )
-        )
+        # order_state.items.append(
+        #     OrderItem(
+        #         item_name=item_name,
+        #         quantity=quantity,
+        #     )
+        # )
+        
 
         print(f"Order status: {order_state.items}")
 
@@ -110,10 +103,10 @@ def create_order_tools(order_state: OrderState):
         total = 0
 
         for item in order_state.items:
-            menu_item = find_menu_item(item.item_name)
+            menu_item = menu_repository.get_item_by_name(item.item_name)
 
             if menu_item:
-                total += menu_item["price"] * item.quantity
+                total += menu_item.price * item.quantity
 
         await params.result_callback(
             {
