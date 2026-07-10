@@ -41,9 +41,10 @@ from pipecat.workers.runner import WorkerRunner
 
 from database import SessionLocal
 from prompts.system import SYSTEM_PROMPT
+from redis_client import redis_client
 from repositories.interfaces.menu_repository import MenuRepository
+from repositories.redis_repository.conversation_repository import RedisConversationRepository
 from repositories.sqlalchemy.menu_repository import SqlAlchemyMenuRepository
-from state.order import OrderState
 from tools.menu import create_menu_tools
 from tools.order import create_order_tools
 from tools.restaurant import is_restaurant_open
@@ -64,16 +65,17 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments) -> Non
     """
     logger.info("Starting bot")
 
-    order_state=OrderState()
-
     session = SessionLocal()
-    menu_repository=SqlAlchemyMenuRepository(session)
+    menu_repository = SqlAlchemyMenuRepository(session)
+    conversation_repository = RedisConversationRepository(redis_client)
+    # customer_repository = SqlAlchemyCustomerRespository(session)
+    # customer = customer_repository.create()
 
-    tools= [
-            get_current_time,
-            is_restaurant_open,
-            *create_menu_tools(menu_repository),
-            *create_order_tools(order_state, menu_repository)
+    tools = [
+        get_current_time,
+        is_restaurant_open,
+        *create_menu_tools(menu_repository),
+        *create_order_tools(conversation_repository, menu_repository),
     ]
 
     # Realtime LLM service (handles STT, LLM, and TTS internally)
@@ -83,7 +85,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments) -> Non
         settings=GeminiLiveLLMService.Settings(
             model=os.getenv("GOOGLE_MODEL"),
             voice=os.getenv("GOOGLE_VOICE_ID"),
-            system_instruction =SYSTEM_PROMPT
+            system_instruction=SYSTEM_PROMPT,
         ),
     )
 

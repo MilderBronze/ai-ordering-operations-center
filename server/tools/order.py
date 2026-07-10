@@ -1,10 +1,12 @@
 from pipecat.services.llm_service import FunctionCallParams
 
+from repositories.interfaces.conversation_repository import ConversationRepository
 from repositories.interfaces.menu_repository import MenuRepository
+from state.conversation import ConversationItem
 from state.order import OrderItem, OrderState
 
 
-def create_order_tools(order_state: OrderState, menu_repository: MenuRepository):
+def create_order_tools(conversation_repository: ConversationRepository, menu_repository: MenuRepository):
 
     async def add_to_order(
         params: FunctionCallParams,
@@ -18,7 +20,7 @@ def create_order_tools(order_state: OrderState, menu_repository: MenuRepository)
             quantity: Number of items to add.
         """
 
-        menu_item = menu_repository.get_item_by_name(item_name)
+        menu_item = await menu_repository.get_item_by_name(item_name)
         if menu_item is None:
             await params.result_callback(f"{item_name} is not available on our menu.")
             return
@@ -27,26 +29,23 @@ def create_order_tools(order_state: OrderState, menu_repository: MenuRepository)
             await params.result_callback(f"Sorry, {item_name} is currently unavailable.")
             return
 
-        # for item in order_state.items:
-        #     if item.item_name == item_name:
-        #         item.quantity += quantity
-
-        #         print(f"Order status: {order_state.items}")
-
-        #         await params.result_callback("Added.")
-        #         return
-
-        # order_state.items.append(
-        #     OrderItem(
-        #         item_name=item_name,
-        #         quantity=quantity,
-        #     )
-        # )
+        if not await conversation_repository.exists():
+            await conversation_repository.create_conversation()
         
+        conversation_item = ConversationItem(
+            menu_item_id=menu_item.menu_item_id,
+            menu_item_name=menu_item.name,
+            unit_price=float(menu_item.price),
+            quantity=quantity,
+        )
+        # create a new order instance.. maybe initialize the order instance here.
+        # here we will lazy init customer ... but how would the other tools know the customer we are talking about.???
+        # order_repository.add_to_order(item_name, quantity)
+        await conversation_repository.add_to_order(conversation_item) # the in memory database.
 
-        print(f"Order status: {order_state.items}")
-
-        await params.result_callback("Added.")
+        await params.result_callback(
+            f"Added {quantity} {menu_item.name} to your order."
+        )
 
     async def remove_from_order(
         params: FunctionCallParams,
@@ -58,59 +57,48 @@ def create_order_tools(order_state: OrderState, menu_repository: MenuRepository)
             item_name: Name of the item to remove.
         """
 
-        for item in order_state.items:
-            if item.item_name == item_name:
-                order_state.items.remove(item)
-                break
+        removed = await conversation_repository.remove_from_order(item_name)
+        if removed:
+            print(f"{item_name} removed sucessfully from your order.")
+            await params.result_callback(f"Removed {item_name} from your order.")
 
-        print(f"Order status: {order_state.items}")
+        else:
+            print(f"Couldn't find {item_name} in your orders to remove.")
+            await params.result_callback("Item not found.")
 
-        await params.result_callback("Removed.")
-
-    async def change_quantity(
+    async def set_quantity(
         params: FunctionCallParams,
         item_name: str,
         quantity: int,
     ):
-        """Change the quantity of an item in the customer's order.
+        """Set the quantity of an item in the customer's order.
 
         Args:
             item_name: Name of the item whose quantity should be changed.
             quantity: The new quantity for the item.
         """
-
-        for item in order_state.items:
-            if item.item_name == item_name:
-                item.quantity = quantity
-                break
-
-        print(f"Order status: {order_state.items}")
-
-        await params.result_callback("Quantity changed.")
+        set = await conversation_repository.set_quantity(item_name, quantity)
+        if set:
+            await params.result_callback("Quantity set.")
+        else:
+            await params.result_callback("Menu item not found in your order to set the quantity.")
 
     async def get_order(
         params: FunctionCallParams,
     ):
         """Return the customer's current order."""
-
-        await params.result_callback(order_state.items)
+        order = await conversation_repository.get_conversation()
+        await params.result_callback(f"Your order: {order}")
 
     async def get_bill(
         params: FunctionCallParams,
     ):
         """Return the total bill for the customer's current order."""
 
-        total = 0
-
-        for item in order_state.items:
-            menu_item = menu_repository.get_item_by_name(item.item_name)
-
-            if menu_item:
-                total += menu_item.price * item.quantity
-
+        bill = await conversation_repository.get_bill()
         await params.result_callback(
             {
-                "total": total,
+                "total": bill,
             }
         )
 
@@ -119,16 +107,25 @@ def create_order_tools(order_state: OrderState, menu_repository: MenuRepository)
     ):
         """Confirm and place the customer's current order."""
 
-        print(order_state)
 
         await params.result_callback(
             "Your order has been placed successfully."
         )
 
+    async def increase_quantity(params: FunctionCallParams, menu_item: str, quantity: int):
+        await conversation_repository.increment_quantity(menu_item, quantity)
+        await params.result_callback(f"The quantity of {menu_item} has been increased by {quantity}")
+
+    async def decrease_quantity(params: FunctionCallParams, menu_item: str, quantity: int):
+        await conversation_repository.decrement_quantity(menu_item, quantity)
+        await params.result_callback(f"The quantity of {menu_item} has been decreased by {quantity}")
+
     return [
         add_to_order,
         remove_from_order,
-        change_quantity,
+        set_quantity,
+        increase_quantity,
+        decrease_quantity,
         get_order,
         get_bill,
         confirm_order

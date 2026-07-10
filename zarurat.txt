@@ -1,0 +1,12 @@
+api/v1:
+currently make this happen first:
+1. user comes, he banters, he mentions items -> might not place and disconnect, or place and disconnect. only create a new customer and create a new order and create the necessary relations between the table if and only if the latter i.e. place and disconnect happens.
+
+2. tables expand. customers are created so that even if \call happens, and order unplaced, they are considered as draft orders and their order items would be remembered by the system for about 30 minutes post which, they will be removed by the cron job.
+
+
+3. multimodel system. right now it is pizza, reform the system such that it becomes a restaurant, the user calls the restaurant, based on the call, the user is redirected to another agent, like if user said, pizza> divert him to the pizzeria, if user said dosa > divert the call to a south indian place and so on and so forth. so make the system flexible in this sense.
+
+lets take it one step at a time.
+sbse pehle order ko db se leke aate hain.
+abhi kya hoga ki hame ek tareeka sochna hai jisse in memory na rkhna ho.
