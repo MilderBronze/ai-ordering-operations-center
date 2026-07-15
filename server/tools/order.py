@@ -1,12 +1,15 @@
 from pipecat.services.llm_service import FunctionCallParams
 
 from repositories.interfaces.conversation_repository import ConversationRepository
+from repositories.interfaces.customer_repository import CustomerRepository
 from repositories.interfaces.menu_repository import MenuRepository
 from state.conversation import ConversationItem
 from state.order import OrderItem, OrderState
 
 
-def create_order_tools(conversation_repository: ConversationRepository, menu_repository: MenuRepository):
+def create_order_tools(
+    conversation_repository: ConversationRepository, menu_repository: MenuRepository, customer_repository: CustomerRepository
+):
 
     async def add_to_order(
         params: FunctionCallParams,
@@ -31,7 +34,7 @@ def create_order_tools(conversation_repository: ConversationRepository, menu_rep
 
         if not await conversation_repository.exists():
             await conversation_repository.create_conversation()
-        
+
         conversation_item = ConversationItem(
             menu_item_id=menu_item.menu_item_id,
             menu_item_name=menu_item.name,
@@ -41,11 +44,9 @@ def create_order_tools(conversation_repository: ConversationRepository, menu_rep
         # create a new order instance.. maybe initialize the order instance here.
         # here we will lazy init customer ... but how would the other tools know the customer we are talking about.???
         # order_repository.add_to_order(item_name, quantity)
-        await conversation_repository.add_to_order(conversation_item) # the in memory database.
+        await conversation_repository.add_to_order(conversation_item)  # the in memory database.
 
-        await params.result_callback(
-            f"Added {quantity} {menu_item.name} to your order."
-        )
+        await params.result_callback(f"Added {quantity} {menu_item.name} to your order.")
 
     async def remove_from_order(
         params: FunctionCallParams,
@@ -66,11 +67,7 @@ def create_order_tools(conversation_repository: ConversationRepository, menu_rep
             print(f"Couldn't find {item_name} in your orders to remove.")
             await params.result_callback("Item not found.")
 
-    async def set_quantity(
-        params: FunctionCallParams,
-        item_name: str,
-        quantity: int,
-    ):
+    async def set_quantity(params: FunctionCallParams, item_name: str, quantity: int):
         """Set the quantity of an item in the customer's order.
 
         Args:
@@ -83,16 +80,12 @@ def create_order_tools(conversation_repository: ConversationRepository, menu_rep
         else:
             await params.result_callback("Menu item not found in your order to set the quantity.")
 
-    async def get_order(
-        params: FunctionCallParams,
-    ):
+    async def get_order(params: FunctionCallParams):
         """Return the customer's current order."""
         order = await conversation_repository.get_conversation()
         await params.result_callback(f"Your order: {order}")
 
-    async def get_bill(
-        params: FunctionCallParams,
-    ):
+    async def get_bill(params: FunctionCallParams):
         """Return the total bill for the customer's current order."""
 
         bill = await conversation_repository.get_bill()
@@ -102,23 +95,31 @@ def create_order_tools(conversation_repository: ConversationRepository, menu_rep
             }
         )
 
-    async def confirm_order(
-        params: FunctionCallParams,
-    ):
+    async def confirm_order(params: FunctionCallParams):
         """Confirm and place the customer's current order."""
-
-
-        await params.result_callback(
-            "Your order has been placed successfully."
-        )
+        # flow: when confirm order is done, order repository is supposed to be called, customer repository is supposed to be called.
+        # create a new customer, create a new order, wire in the customer's id into the order table as FK.
+        # and then clear the redis.
+        # so first of all, to create a customer, get all the customer details.. create a json.. pass it in the create_customer method right below.
+        customer_details = conversation_repository
+        customer = customer_repository.create_customer()
+        await conversation_repository.confirm_order()
+        await params.result_callback("Your order has been placed successfully.")
 
     async def increase_quantity(params: FunctionCallParams, menu_item: str, quantity: int):
         await conversation_repository.increment_quantity(menu_item, quantity)
-        await params.result_callback(f"The quantity of {menu_item} has been increased by {quantity}")
+        await params.result_callback(
+            f"The quantity of {menu_item} has been increased by {quantity}"
+        )
 
     async def decrease_quantity(params: FunctionCallParams, menu_item: str, quantity: int):
         await conversation_repository.decrement_quantity(menu_item, quantity)
-        await params.result_callback(f"The quantity of {menu_item} has been decreased by {quantity}")
+        await params.result_callback(
+            f"The quantity of {menu_item} has been decreased by {quantity}"
+        )
+
+    async def ask_customer_details(params: FunctionCallParams):
+        """Prompt the user to provide their details to the LLM. when the user then provides their details to the LLM, store it in a redis state, perhaps the conversation state needs to """
 
     return [
         add_to_order,
@@ -128,5 +129,6 @@ def create_order_tools(conversation_repository: ConversationRepository, menu_rep
         decrease_quantity,
         get_order,
         get_bill,
-        confirm_order
+        confirm_order,
+        ask_customer_details
     ]
