@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
-from server.models.order import OrderType
+
+from models.order import OrderType
 
 
 class ConversationItem(BaseModel):

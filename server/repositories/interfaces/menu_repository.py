@@ -6,21 +6,18 @@ from models.menu_item import MenuItem
 class MenuRepository(ABC):
 
     @abstractmethod
-    def get_item_by_name(self, item_name: str) -> MenuItem | None:
+    async def get_item_by_name(self, item_name: str) -> MenuItem | None:
         pass
 
     @abstractmethod
-    def get_all(self) -> list[MenuItem] | None: # none in case menu table is all empty
+    async def get_all(self) -> list[MenuItem] | None:
+        # None in case menu table is empty
         pass
 
     @abstractmethod
-    def create(self, menu_item: MenuItem) -> MenuItem:
+    async def create(self, menu_item: MenuItem) -> MenuItem:
         pass
 
     @abstractmethod
-    def update(self, menu_item: MenuItem) -> MenuItem:
-        pass
-
-    @abstractmethod
-    def delete(self, item_id: int) -> None:
+    async def delete(self, item_id: int) -> None:
         pass

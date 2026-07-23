@@ -1,34 +1,11 @@
 from abc import ABC, abstractmethod
 
+from dtos import OrderCreate
+from models.order import Order
+
 
 class OrderRepository(ABC):
     @abstractmethod
-    def add_to_order(
-        self,
-        item_name: str,
-        quantity: int,
-    ):
-        pass
-
-    @abstractmethod
-    def remove_from_order(
-        self,
-        item_name: str,
-    ):
-        pass
-
-    @abstractmethod
-    def change_quantity(
-        self,
-        item_name: str,
-        quantity: int,
-    ):
-        pass
-
-    @abstractmethod
-    def get_order(self): # the return type for this is subject to change. will unfold naturally. i know this is wrong right now.
-        pass
-
-    @abstractmethod
-    def confirm_order(self):
+    async def create_order(self, order: OrderCreate) -> Order:
+        """Persist a new order."""
         pass

@@ -25,11 +25,6 @@ class Customer(Base):
         nullable=False,
     )
 
-    gender: Mapped[str] = mapped_column(
-        String(20),
-        nullable=False,
-    )
-
     phone: Mapped[str] = mapped_column(
         String(20),
         nullable=False,

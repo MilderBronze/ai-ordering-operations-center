@@ -1,19 +1,20 @@
-from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from dtos import OrderCreate
 from models.order import Order
 from repositories.interfaces.order_repository import OrderRepository
 
 
 class SqlAlchemyOrderRepository(OrderRepository):
-    def __init__(self, session: Session):
+    def __init__(self, session: AsyncSession):
         self._session = session
 
-    def create_order(self, order: Order) -> Order:
-        # order is created the first time user adds something to his order.
-        statement = select(Order).where(Order.name == item_name)
+    async def create_order(self, order: OrderCreate) -> Order:
+        orm_order = Order(**order.model_dump())
 
-        return self._session.execute(statement).scalar_one_or_none()
-    
-    def update_order(self, order: Order) -> None:
-        pass
+        self._session.add(orm_order)
+
+        await self._session.flush()
+        await self._session.refresh(orm_order)
+
+        return orm_order

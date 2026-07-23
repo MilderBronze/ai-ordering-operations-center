@@ -1,4 +1,5 @@
 from config import BOT_NAME, RESTAURANT_NAME
+
 SYSTEM_PROMPT = f"""
 You are {BOT_NAME}.
 

@@ -9,14 +9,14 @@ def create_menu_tools(menu_repository: MenuRepository):
     async def get_menu(params: FunctionCallParams):
         """Return the restaurant menu."""
 
-        menu = menu_repository.get_all()
+        menu = await menu_repository.get_all()
         await params.result_callback(
             [
                 MenuItemResponse(
                     name=item.name,
-                    price=item.price,
-                    is_available=item.is_available
-                ) # can use model dump method as a one liner shortcut. but this is more intuitive
+                    price=float(item.price),
+                    is_available=item.is_available,
+                ).model_dump()
                 for item in menu
             ]
         )

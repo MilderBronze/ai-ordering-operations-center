@@ -1,54 +1,88 @@
 from abc import ABC, abstractmethod
 
+from models.order import OrderType
 from state.conversation import ConversationItem, ConversationState
 
 
 class ConversationRepository(ABC):
     @abstractmethod
-    def create_conversation(self) -> None:
+    async def create_conversation(self) -> ConversationState:
         """Create and persist a new conversation."""
         pass
 
     @abstractmethod
-    def add_to_order(self, item: ConversationItem) -> None:
+    async def add_to_order(self, item: ConversationItem) -> None:
         """Add an item to the current order."""
         pass
 
     @abstractmethod
-    def remove_from_order(self, menu_item: str) -> None:
+    async def remove_from_order(self, menu_item: str) -> bool:
         """Remove an item completely from the current order."""
         pass
 
     @abstractmethod
-    def increment_quantity(self, menu_item: str, quantity: int) -> bool:
-        """Change the quantity of an item."""
+    async def increment_quantity(
+        self,
+        menu_item: str,
+        quantity: int,
+    ) -> bool:
+        """Increase quantity of an item."""
         pass
 
     @abstractmethod
-    def decrement_quantity(self, menu_item: str, quantity: int) -> bool:
-        """Change the quantity of an item."""
+    async def decrement_quantity(
+        self,
+        menu_item: str,
+        quantity: int,
+    ) -> bool:
+        """Decrease quantity of an item."""
         pass
 
     @abstractmethod
-    def set_quantity(self, menu_item: str, quantity: int) -> bool:
-        """Change the quantity of an item."""
+    async def set_quantity(
+        self,
+        menu_item: str,
+        quantity: int,
+    ) -> bool:
+        """Set quantity of an item."""
         pass
 
     @abstractmethod
-    def get_conversation(self) -> ConversationState:
+    async def get_conversation(self) -> ConversationState:
         """Return the current conversation."""
         pass
 
     @abstractmethod
-    def get_bill(self) -> float:
+    async def get_bill(self) -> float:
         """Return the current bill."""
         pass
 
     @abstractmethod
-    def delete_conversation(self) -> None:
-        """Delete the conversation."""
+    async def delete_conversation(self) -> None:
+        """Delete the current conversation."""
         pass
 
     @abstractmethod
-    def exists(self) -> bool:
-        """check if conversation exists"""
+    async def exists(self) -> bool:
+        """Check whether a conversation exists."""
+        pass
+
+    @abstractmethod
+    async def set_delivery_address(self, address: str) -> bool:
+        """Update delivery address."""
+        pass
+
+    @abstractmethod
+    async def set_customer_contact(self, contact: str) -> bool:
+        """Update customer contact."""
+        pass
+
+    @abstractmethod
+    async def set_customer_name(self, name: str) -> bool:
+        """Update customer name."""
+        pass
+
+    @abstractmethod
+    async def set_order_type(self, order_type: OrderType) -> bool:
+        """Update order type."""
+        pass
