@@ -7,3 +7,4 @@ class OrderCreate(BaseModel):
     customer_id: int
     order_type: OrderType
     total_bill_amount: float
+    delivery_address: str | None = None

@@ -226,7 +226,6 @@ def create_order_tools(
         customer = CustomerCreate(
             name=conversation.customer_name,
             phone=conversation.phone_number,
-            address=conversation.delivery_address,
             payment_mode=PaymentMode.CASH,  # TODO: change this to accept this from the user conversation
         )
 
@@ -242,6 +241,7 @@ def create_order_tools(
 
             order = OrderCreate(
                 customer_id=customer_created.customer_id,
+                delivery_address=conversation.delivery_address,
                 order_type=conversation.order_type,
                 total_bill_amount=total_bill_amount,
             )

@@ -31,11 +31,6 @@ class Customer(Base):
         unique=True,
     )
 
-    address: Mapped[str] = mapped_column(
-        String(255),
-        nullable=False,
-    )
-
     payment_mode: Mapped[PaymentMode] = mapped_column(
         Enum(PaymentMode),
         nullable=False,

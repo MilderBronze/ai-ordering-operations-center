@@ -1,7 +1,7 @@
 import enum
 from datetime import UTC, datetime
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Numeric
+from sqlalchemy import DateTime, Enum, ForeignKey, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from database import Base
@@ -41,3 +41,5 @@ class Order(Base):
         default=lambda: datetime.now(UTC),
         nullable=False,
     )
+
+    delivery_address: Mapped[str | None] = mapped_column(nullable=True)
