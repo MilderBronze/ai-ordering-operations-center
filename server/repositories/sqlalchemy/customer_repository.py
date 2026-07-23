@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dtos import CustomerCreate
@@ -22,3 +23,14 @@ class SqlAlchemyCustomerRepository(CustomerRepository):
         await self._session.refresh(orm_customer)
 
         return orm_customer
+    
+    async def get_by_phone(
+        self,
+        phone: str,
+    ) -> Customer | None:
+
+        result = await self._session.execute(
+            select(Customer).where(Customer.phone == phone)
+        )
+
+        return result.scalar_one_or_none()

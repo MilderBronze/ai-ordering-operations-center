@@ -231,7 +231,12 @@ def create_order_tools(
         )
 
         try:
-            customer_created = await customer_repository.create_customer(customer)
+            customer_created = await customer_repository.get_by_phone(
+                conversation.phone_number,
+            )
+
+            if customer_created is None:
+                customer_created = await customer_repository.create_customer(customer)
 
             total_bill_amount = await conversation_repository.get_bill()
 
